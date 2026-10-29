@@ -1,0 +1,88 @@
+/* Additions for the React version: links styled as buttons, account menu,
+   sign-in page and a few page-level helpers. Uses the tokens from base.css. */
+
+a.nav-tab, a.tb-btn, a.link-btn, a.quick-action-card, a.back-link { text-decoration: none; }
+a.quick-action-card { color: var(--ink); }
+button.dash-tpl-card { padding: 0; background: var(--surface); color: inherit; text-align: inherit; font: inherit; width: 100%; }
+.optional-note { font-weight: 400; color: var(--ink-faint); }
+
+/* let grid/flex children shrink on phones instead of widening the page */
+.dash-grid > *, .cover-grid > * { min-width: 0; }
+.value-with-help input, .loc-input-row input, .contact-row input { min-width: 0; }
+@media (max-width: 560px) {
+  .dash-tpl-row { gap: 8px; }
+  .contact-row { flex-wrap: wrap; }
+  .contact-label-wrap, .contact-label-wrap.is-custom { flex: 1 1 100%; }
+  .contact-value-wrap { flex: 1 1 0; }
+}
+
+/* dashboard miniature: scale the full-size page inside a box of the scaled size */
+.dash-hero-preview-inner { transform: none; width: 343px; height: 444px; background: #fff; }
+.dash-hero-preview-inner .page { max-width: none; transform: scale(.42); transform-origin: top left; }
+
+/* account menu */
+.profile-btn { cursor: pointer; }
+.profile-menu {
+  position: absolute; top: calc(100% + 8px); right: 0; min-width: 230px; z-index: 70;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+  box-shadow: var(--shadow); padding: 6px; display: flex; flex-direction: column; gap: 2px;
+}
+.profile-menu .btn { width: 100%; justify-content: flex-start; }
+.profile-menu .btn:disabled { opacity: .45; cursor: not-allowed; }
+.profile-menu-head { padding: 8px 9px 10px; border-bottom: 1px solid var(--border); margin-bottom: 4px; min-width: 0; }
+.profile-menu-name { font-size: 13.5px; font-weight: 700; }
+.profile-menu-email { font-size: 12px; color: var(--ink-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.menu-divider { height: 1px; background: var(--border); margin: 4px 0; }
+.danger-text { color: var(--danger) !important; }
+.word-btn { font-weight: 700; font-size: 12px; }
+
+/* page helpers */
+.page-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+.page-head .page-title { margin: 0; }
+.page-title { font-family: 'Source Serif 4', Georgia, serif; font-size: clamp(22px, 3vw, 28px); margin: 0 0 8px; }
+.page-lede { color: var(--ink-soft); font-size: 14.5px; line-height: 1.55; margin: 0 0 22px; max-width: 64ch; }
+.ats-select { max-width: 360px; margin-bottom: 18px; }
+.ats-edit { margin-top: 18px; }
+.empty-note { padding: 28px 0; color: var(--ink-soft); font-size: 14px; }
+.cover-actions { margin-top: 16px; }
+.cover-preview { padding-top: 0; }
+.splash {
+  min-height: 50vh; display: flex; align-items: center; justify-content: center;
+  color: var(--ink-soft); font-size: 14px;
+}
+
+/* career stage presets on the Templates page */
+.stage-block { margin-top: 34px; }
+.stage-block h2 { margin: 0 0 6px; }
+.stage-block .gallery-head p { margin: 0 0 18px; }
+.stage-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+.stage-card { margin-bottom: 0; display: flex; flex-direction: column; }
+.stage-card p { flex: 1; }
+.stage-card .tpl-pick { margin-top: 12px; }
+
+/* sign-in / register */
+.auth-wrap {
+  min-height: 100vh; display: grid; grid-template-columns: 1fr; gap: 28px; align-items: center;
+  max-width: 1040px; margin: 0 auto; padding: 40px max(16px, env(safe-area-inset-right, 0px)) 40px max(16px, env(safe-area-inset-left, 0px));
+}
+@media (min-width: 860px) { .auth-wrap { grid-template-columns: 1.1fr 1fr; gap: 56px; } }
+.auth-side .brand { font-size: 22px; margin-bottom: 22px; }
+.auth-title {
+  font-family: 'Source Serif 4', Georgia, serif; font-weight: 600; letter-spacing: -.01em;
+  font-size: clamp(28px, 4vw, 40px); line-height: 1.12; margin: 0 0 14px; text-wrap: balance;
+}
+.auth-sub { color: var(--ink-soft); font-size: 15px; line-height: 1.6; margin: 0; max-width: 46ch; }
+.auth-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+  box-shadow: var(--shadow); padding: 26px; display: flex; flex-direction: column; gap: 14px; min-width: 0;
+}
+.auth-card h2 { margin: 0; font-size: 20px; }
+.auth-card-sub { margin: -6px 0 4px; font-size: 13.5px; color: var(--ink-soft); }
+.auth-card-sub a { color: var(--accent); font-weight: 700; text-decoration: none; }
+.auth-card-sub a:hover { text-decoration: underline; }
+.auth-error {
+  font-size: 13px; color: var(--danger); background: var(--accent-soft);
+  border-radius: 8px; padding: 9px 11px; line-height: 1.45;
+}
+.auth-submit { justify-content: center; margin-top: 4px; }
+.tb-btn:disabled { opacity: .55; cursor: not-allowed; }
