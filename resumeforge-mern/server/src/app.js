@@ -18,6 +18,10 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export function createApp() {
   const app = express();
 
+  /* Hosts like Render, Railway and Heroku sit behind one proxy. Trusting it lets
+     the login rate limit see each visitor's real IP instead of the proxy's. */
+  app.set('trust proxy', Number(process.env.TRUST_PROXY ?? 1));
+
   app.use(
     helmet({
       contentSecurityPolicy: {

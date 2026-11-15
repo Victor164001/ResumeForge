@@ -52,9 +52,17 @@ export function ResumeProvider({ children }) {
       setSaveStatus(pending.current ? 'saving' : 'saved');
     } catch (e) {
       setSaveStatus('error');
-      showToast(`Couldn’t save: ${e.message}`);
+      showToast(`Couldn’t save: ${e.message} Retrying…`);
+      /* keep the unsaved edit and try again, e.g. while a sleeping server wakes up */
+      if (!pending.current && e.status !== 401) {
+        pending.current = job;
+        clearTimeout(saveTimer.current);
+        saveTimer.current = setTimeout(() => flushSaveRef.current(), 5000);
+      }
     }
   }, [showToast]);
+  const flushSaveRef = useRef(flushSave);
+  flushSaveRef.current = flushSave;
 
   const queueSave = useCallback((data) => {
     pending.current = { id: activeIdRef.current, data };
