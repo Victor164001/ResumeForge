@@ -9,9 +9,11 @@ function authResponse(res, user, status = 200) {
   res.status(status).json({ token: signToken(user._id), user: user.toJSON() });
 }
 
-/* POST /api/auth/register  { name, email, password } */
+/* POST /api/auth/register  { name, email, password, starter? }
+   starter: false skips the example resume (the client is about to move the
+   guest's own resumes into the new account). */
 export const register = asyncHandler(async (req, res) => {
-  const { name, email, password } = req.body || {};
+  const { name, email, password, starter = true } = req.body || {};
   if (!name?.trim() || !email?.trim() || !password) {
     throw new HttpError(400, 'Name, email and password are required.');
   }
@@ -22,12 +24,14 @@ export const register = asyncHandler(async (req, res) => {
 
   const user = await User.create({ name, email, password });
 
-  /* Every account starts with one example resume, pre-filled with the name they signed up with. */
-  const data = RF.defaultState();
-  data.heading.name = user.name;
-  const emailContact = data.heading.contacts.find((c) => c.label === 'Email');
-  if (emailContact) emailContact.value = user.email;
-  await Resume.create({ user: user._id, name: `${user.name}'s Resume`, data });
+  /* New accounts start with one example resume, pre-filled with the name they signed up with. */
+  if (starter !== false) {
+    const data = RF.defaultState();
+    data.heading.name = user.name;
+    const emailContact = data.heading.contacts.find((c) => c.label === 'Email');
+    if (emailContact) emailContact.value = user.email;
+    await Resume.create({ user: user._id, name: `${user.name}'s Resume`, data });
+  }
   await logActivity(user._id, 'Created your account');
 
   authResponse(res, user, 201);

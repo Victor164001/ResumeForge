@@ -42,11 +42,3 @@ export async function api(path, { method = 'GET', body, keepalive = false } = {}
   }
   return data;
 }
-
-/* Fire-and-forget helpers used after exports and template views. */
-export function track(statKey, activityMessage) {
-  const calls = [];
-  if (statKey) calls.push(api(`/stats/${statKey}/increment`, { method: 'POST' }));
-  if (activityMessage) calls.push(api('/activity', { method: 'POST', body: { message: activityMessage } }));
-  return Promise.allSettled(calls).then(() => window.dispatchEvent(new Event('resumeforge:activity')));
-}

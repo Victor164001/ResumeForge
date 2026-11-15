@@ -1,7 +1,8 @@
-import { Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom';
+import { Navigate, Outlet, Route, Routes } from 'react-router-dom';
 import Navbar from './components/Navbar.jsx';
 import { useAuth } from './context/AuthContext.jsx';
 import { ResumeProvider, useResume } from './context/ResumeContext.jsx';
+import { apiStore, localStore } from './store/stores.js';
 import AuthPage from './pages/AuthPage.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import Builder from './pages/builder/Builder.jsx';
@@ -16,14 +17,13 @@ function Splash({ text }) {
   return <div className="splash">{text}</div>;
 }
 
-/* Signed-in shell: loads the resume library, then shows the navbar + page. */
-function ProtectedLayout() {
+/* Open to everyone. Guests work from the browser store; signed-in users from the API.
+   Switching (sign in / sign out) remounts the provider so it loads the right library. */
+function AppLayout() {
   const { user, loading } = useAuth();
-  const location = useLocation();
-  if (loading) return <Splash text="Loading your account…" />;
-  if (!user) return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+  if (loading) return <Splash text="Loading…" />;
   return (
-    <ResumeProvider key={user.id}>
+    <ResumeProvider key={user ? user.id : 'guest'} store={user ? apiStore : localStore}>
       <Shell />
     </ResumeProvider>
   );
@@ -44,7 +44,7 @@ export default function App() {
     <Routes>
       <Route path="/login" element={<AuthPage mode="login" />} />
       <Route path="/register" element={<AuthPage mode="register" />} />
-      <Route element={<ProtectedLayout />}>
+      <Route element={<AppLayout />}>
         <Route index element={<Dashboard />} />
         <Route path="builder" element={<Builder />} />
         <Route path="templates" element={<Templates />} />

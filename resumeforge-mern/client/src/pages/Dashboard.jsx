@@ -4,9 +4,8 @@ import Icon from '../components/Icon.jsx';
 import ResumePreview from '../components/ResumePreview.jsx';
 import ResumeRow from '../components/ResumeRow.jsx';
 import TemplateThumb from '../components/TemplateThumb.jsx';
-import { api, track } from '../api/client.js';
 import { useAuth } from '../context/AuthContext.jsx';
-import { useResume } from '../context/ResumeContext.jsx';
+import { useResume, useTrack } from '../context/ResumeContext.jsx';
 import { useUi } from '../context/UiContext.jsx';
 import { TEMPLATES } from '../data/content.js';
 
@@ -22,14 +21,15 @@ function StatCard({ icon, value, label }) {
 
 export default function Dashboard() {
   const { user } = useAuth();
-  const { resume, library, update, createResume } = useResume();
+  const { resume, library, update, createResume, store, isGuest } = useResume();
+  const track = useTrack();
   const { prompt, showToast } = useUi();
   const navigate = useNavigate();
   const [stats, setStats] = useState(null);
 
   useEffect(() => {
-    api('/stats').then(setStats).catch(() => {});
-  }, [library]);
+    store.getStats().then(setStats).catch(() => {});
+  }, [store, library]);
 
   const firstName = (user?.name || '').trim().split(' ')[0] || 'there';
   const sorted = library.slice().sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
@@ -59,7 +59,7 @@ export default function Dashboard() {
     <div className="dash-wrap">
       <div className="dash-hero">
         <div>
-          <div className="dash-hero-eyebrow">WELCOME BACK, {firstName.toUpperCase()}</div>
+          <div className="dash-hero-eyebrow">{isGuest ? 'FREE · NO SIGN-UP NEEDED TO START' : `WELCOME BACK, ${firstName.toUpperCase()}`}</div>
           <h1 className="dash-hero-title">Create a Professional Resume That Gets You Hired</h1>
           <p className="dash-hero-sub">Choose a template, build your resume with ease, and check how it scores before you send it.</p>
           <div className="dash-hero-actions">

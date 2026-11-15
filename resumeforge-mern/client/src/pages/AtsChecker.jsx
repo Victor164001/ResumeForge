@@ -2,12 +2,11 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import RF from '@shared/core.js';
 import Icon from '../components/Icon.jsx';
-import { api } from '../api/client.js';
 import { useResume } from '../context/ResumeContext.jsx';
 import { useUi } from '../context/UiContext.jsx';
 
 export default function AtsChecker() {
-  const { library, activeId, resume, openResume } = useResume();
+  const { library, activeId, resume, openResume, store } = useResume();
   const { showToast } = useUi();
   const navigate = useNavigate();
   const [selected, setSelected] = useState(activeId);
@@ -20,11 +19,11 @@ export default function AtsChecker() {
   useEffect(() => {
     if (!selected || isActive) { setRemote(null); return undefined; }
     let cancelled = false;
-    api(`/resumes/${selected}/ats`)
+    store.atsFor(selected)
       .then((r) => { if (!cancelled) setRemote(r); })
       .catch((e) => showToast(e.message));
     return () => { cancelled = true; };
-  }, [selected, isActive, showToast]);
+  }, [selected, isActive, showToast, store]);
 
   const result = isActive ? (resume ? RF.scoreAts(resume) : null) : remote;
   const verdict = !result ? '' : result.score >= 80 ? 'Strong' : result.score >= 55 ? 'Needs work' : 'Not there yet';

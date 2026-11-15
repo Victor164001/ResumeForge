@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Icon from '../components/Icon.jsx';
-import { api } from '../api/client.js';
+import { useAuth } from '../context/AuthContext.jsx';
+import { useResume } from '../context/ResumeContext.jsx';
 import { useUi } from '../context/UiContext.jsx';
 import { useExporter } from '../hooks/useExporter.js';
 import { todayLong } from '../lib/exporters.js';
@@ -20,14 +21,16 @@ const PARAGRAPHS = [
 export default function CoverLetter() {
   const { showToast } = useUi();
   const { exportCoverLetter, busy } = useExporter();
+  const { store } = useResume();
+  const { registerBeforeAuth } = useAuth();
   const [cl, setCl] = useState(null);
   const [status, setStatus] = useState('');
   const timer = useRef();
   const latest = useRef(null);
 
   useEffect(() => {
-    api('/cover-letter').then((r) => setCl(r.coverLetter)).catch((e) => showToast(e.message));
-  }, [showToast]);
+    store.getCoverLetter().then(setCl).catch((e) => showToast(e.message));
+  }, [store, showToast]);
 
   /* Save after a pause in typing, and on leaving the page. */
   const save = async () => {
@@ -36,14 +39,19 @@ export default function CoverLetter() {
     const body = latest.current;
     latest.current = null;
     try {
-      await api('/cover-letter', { method: 'PUT', body });
+      const { updatedAt, ...fields } = body; // eslint-disable-line no-unused-vars
+      await store.saveCoverLetter(fields);
       setStatus('Saved');
     } catch (e) {
       setStatus('Not saved');
       showToast(`Couldn’t save the cover letter: ${e.message}`);
     }
   };
-  useEffect(() => () => { save(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const saveRef = useRef(save);
+  saveRef.current = save;
+  useEffect(() => () => { saveRef.current(); }, []);
+  /* save pending edits before a sign-in moves this letter into the account */
+  useEffect(() => registerBeforeAuth(() => saveRef.current()), [registerBeforeAuth]);
 
   const set = (key, value) => {
     const next = { ...cl, [key]: value };
@@ -96,10 +104,10 @@ export default function CoverLetter() {
       </div>
 
       <div className="tb-group cover-actions">
-        <button type="button" className="tb-btn primary" disabled={busy} onClick={() => exportCoverLetter(cl, 'pdf')}>
+        <button type="button" className="tb-btn primary" disabled={busy} onClick={async () => { await save(); exportCoverLetter(cl, 'pdf'); }}>
           <Icon name="download" size={15} /><span>Download PDF</span>
         </button>
-        <button type="button" className="tb-btn outline" disabled={busy} onClick={() => exportCoverLetter(cl, 'docx')}>
+        <button type="button" className="tb-btn outline" disabled={busy} onClick={async () => { await save(); exportCoverLetter(cl, 'docx'); }}>
           <Icon name="download" size={15} /><span>Download Word</span>
         </button>
       </div>

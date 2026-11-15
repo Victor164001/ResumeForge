@@ -2,9 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import RF from '@shared/core.js';
 import Icon from './Icon.jsx';
-import { api, track } from '../api/client.js';
 import { useAuth } from '../context/AuthContext.jsx';
-import { useResume } from '../context/ResumeContext.jsx';
+import { useResume, useTrack } from '../context/ResumeContext.jsx';
 import { useUi } from '../context/UiContext.jsx';
 import { useTheme } from '../hooks/useTheme.js';
 import { downloadBlob } from '../lib/download.js';
@@ -30,6 +29,7 @@ function useOutsideClose(open, ref, onClose) {
 
 export default function Navbar() {
   const { theme, toggle } = useTheme();
+  const track = useTrack();
   return (
     <header className="navbar">
       <div className="brand">Resume<em>Forge</em></div>
@@ -51,13 +51,25 @@ export default function Navbar() {
         <button type="button" className="icon-btn" title="Toggle light / dark" onClick={toggle}>
           <Icon name={theme === 'dark' ? 'sun' : 'moon'} size={17} />
         </button>
+        <SignInButton />
         <ProfileMenu />
       </div>
     </header>
   );
 }
 
+function SignInButton() {
+  const { user, requireAuth } = useAuth();
+  if (user) return null;
+  return (
+    <button type="button" className="tb-btn primary nav-signin" onClick={() => requireAuth({ mode: 'login' })}>
+      Sign in
+    </button>
+  );
+}
+
 function ActivityBell() {
+  const { store } = useResume();
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState([]);
   const [unseen, setUnseen] = useState(0);
@@ -66,8 +78,8 @@ function ActivityBell() {
   useOutsideClose(open, ref, close);
 
   const load = useCallback(() => {
-    api('/activity').then((r) => { setItems(r.items); setUnseen(r.unseenCount); }).catch(() => {});
-  }, []);
+    store.listActivity().then((r) => { setItems(r.items); setUnseen(r.unseenCount); }).catch(() => {});
+  }, [store]);
 
   useEffect(() => {
     load();
@@ -80,7 +92,7 @@ function ActivityBell() {
     setOpen(next);
     if (next && unseen) {
       setUnseen(0);
-      api('/activity/seen', { method: 'POST' }).catch(() => {});
+      store.markActivitySeen().catch(() => {});
     }
   };
 
@@ -108,7 +120,7 @@ function ActivityBell() {
 }
 
 function ProfileMenu() {
-  const { user, logout } = useAuth();
+  const { user, logout, requireAuth } = useAuth();
   const { resume, replaceResume, flushSave } = useResume();
   const { showToast, confirm } = useUi();
   const navigate = useNavigate();
@@ -118,7 +130,7 @@ function ProfileMenu() {
   const close = useCallback(() => setOpen(false), []);
   useOutsideClose(open, ref, close);
 
-  const name = user?.name || 'Account';
+  const name = user?.name || 'Guest';
 
   const saveJson = () => {
     downloadBlob(new Blob([JSON.stringify(resume, null, 2)], { type: 'application/json' }), 'resume-data.json');
@@ -170,16 +182,30 @@ function ProfileMenu() {
       </button>
       {open && (
         <div className="profile-menu">
-          <div className="profile-menu-head">
-            <div className="profile-menu-name">{user?.name}</div>
-            <div className="profile-menu-email">{user?.email}</div>
-          </div>
+          {user ? (
+            <div className="profile-menu-head">
+              <div className="profile-menu-name">{user.name}</div>
+              <div className="profile-menu-email">{user.email}</div>
+            </div>
+          ) : (
+            <div className="profile-menu-head">
+              <div className="profile-menu-name">Not signed in</div>
+              <div className="profile-menu-note">Your work is saved in this browser. Sign in to keep it in your account and download.</div>
+              <button type="button" className="tb-btn primary profile-menu-signin" onClick={() => { close(); requireAuth({ mode: 'register' }); }}>
+                Create account or sign in
+              </button>
+            </div>
+          )}
           <button type="button" className="btn btn-ghost btn-sm" onClick={saveJson} disabled={!resume}>Save progress (.json)</button>
           <button type="button" className="btn btn-ghost btn-sm" onClick={() => fileRef.current?.click()} disabled={!resume}>Load progress (.json)</button>
           <input ref={fileRef} id="load-json" type="file" accept="application/json" hidden onChange={loadJson} />
           <button type="button" className="btn btn-ghost btn-sm danger-text" onClick={startOver} disabled={!resume}>Start over</button>
-          <div className="menu-divider" />
-          <button type="button" className="btn btn-ghost btn-sm" onClick={signOut}>Sign out</button>
+          {user && (
+            <>
+              <div className="menu-divider" />
+              <button type="button" className="btn btn-ghost btn-sm" onClick={signOut}>Sign out</button>
+            </>
+          )}
         </div>
       )}
     </div>

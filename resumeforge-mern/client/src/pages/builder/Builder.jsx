@@ -46,7 +46,7 @@ export default function Builder() {
 }
 
 function Toolbar({ previewOnly, setPreviewOnly }) {
-  const { resume, update, undo, redo, canUndo, canRedo, saveStatus, lastSavedAt } = useResume();
+  const { resume, update, undo, redo, canUndo, canRedo, saveStatus, lastSavedAt, isGuest } = useResume();
   const { showToast } = useUi();
   const { exportResume, busy } = useExporter();
   const [, tick] = useState(0);
@@ -56,11 +56,12 @@ function Toolbar({ previewOnly, setPreviewOnly }) {
     return () => clearInterval(t);
   }, []);
 
+  const where = isGuest ? 'Saved in this browser' : 'Saved to your account';
   const syncLabel = {
     saving: 'Saving…',
-    saved: 'Saved to your account',
+    saved: where,
     error: 'Not saved — check your connection',
-    idle: 'Saved to your account',
+    idle: where,
   }[saveStatus];
 
   return (
