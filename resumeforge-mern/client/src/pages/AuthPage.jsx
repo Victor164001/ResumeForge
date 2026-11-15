@@ -1,5 +1,6 @@
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import AuthForm from '../components/AuthForm.jsx';
+import Logo from '../components/Logo.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 
 /* Optional full-page sign-in (the app itself never requires it until you download). */
@@ -14,7 +15,7 @@ export default function AuthPage({ mode }) {
   return (
     <div className="auth-wrap">
       <div className="auth-side">
-        <div className="brand">Resume<em>Forge</em></div>
+        <div className="brand"><Logo size={30} /><span>Resume<em>Forge</em></span></div>
         <h1 className="auth-title">Resumes that survive the software screen.</h1>
         <p className="auth-sub">
           Build without an account. Sign in when you want to download, and everything you made in this browser is saved to your account.

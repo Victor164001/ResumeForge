@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import RF from '@shared/core.js';
 import Icon from './Icon.jsx';
+import Logo from './Logo.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import { useResume, useTrack } from '../context/ResumeContext.jsx';
 import { useUi } from '../context/UiContext.jsx';
@@ -32,7 +33,7 @@ export default function Navbar() {
   const track = useTrack();
   return (
     <header className="navbar">
-      <div className="brand">Resume<em>Forge</em></div>
+      <NavLink to="/" end className="brand" aria-label="ResumeForge home"><Logo size={26} /><span>Resume<em>Forge</em></span></NavLink>
       <nav className="nav-tabs">
         {TABS.map(([to, label]) => (
           <NavLink
