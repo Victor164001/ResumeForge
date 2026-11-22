@@ -66,6 +66,16 @@ npm start        # Express serves the API and the built React app on PORT
 
 If you host the client separately, set `VITE_API_URL` in `client/.env` to the API's URL and add the client's origin to `CLIENT_URL` in `server/.env` (comma-separated for several). Deploy the `shared/` folder alongside `server/`, since the server imports it.
 
+## Deploy on Vercel
+
+The repo includes `vercel.json` and `api/index.js`, which runs the Express API as one serverless function, while the React app is served as static files.
+
+1. In Vercel, click **Add New → Project** and import the GitHub repo.
+2. Set **Root Directory** to the folder that holds this README (e.g. `resumeforge-mern`). Leave the framework preset as **Other**; `vercel.json` supplies the install, build and output settings.
+3. Add the environment variables `MONGO_URI`, `JWT_SECRET` and `JWT_EXPIRES_IN` (`7d`).
+4. In MongoDB Atlas, keep `0.0.0.0/0` in Network Access: Vercel functions have no fixed IP.
+5. Click **Deploy**. Every push to `main` then redeploys automatically.
+
 ## API
 
 All routes except register/login need `Authorization: Bearer <token>`.
